@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Les Lucioles de la Plaine</title>
     <style>
-        /* --- STYLES GÉNÉRAUX --- */
+        
         body, html {
             margin: 0;
             padding: 0;
@@ -27,7 +27,7 @@
             transform: translateZ(0); 
         }
 
-        /* --- BOUTON FLOTTANT --- */
+        
         #menu-toggle {
             position: absolute;
             top: 1rem;
@@ -61,7 +61,7 @@
         }
         .menu-open #menu-toggle svg { transform: rotate(45deg); }
 
-        /* --- PANNEAU PRINCIPAL --- */
+        
         #ui-panel {
             position: absolute;
             top: 1rem;
@@ -113,7 +113,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- SLIDERS --- */
+        
         .slider-group { margin-bottom: 1.5rem; }
         
         .slider-header {
@@ -162,7 +162,7 @@
             border-color: #fff;
         }
 
-        /* --- AI & CONTROLES --- */
+        
         .ai-container {
             background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
@@ -230,7 +230,7 @@
         button.active-repel { background-color: #db2777 !important; color: white !important; }
         button.active-option { background-color: #10b981 !important; color: white !important; }
 
-        /* STYLE MENU DÉROULANT HARMONISÉ */
+        
         .music-controls {
             display: flex;
             gap: 0.5rem;
@@ -394,13 +394,13 @@
     </div>
 
     <script>
-        // --- LOGIQUE UI ---
+        
         function toggleMenu() {
             const wrapper = document.getElementById('ui-wrapper');
             wrapper.classList.toggle('menu-open');
         }
 
-        // FONCTION AJOUTÉE : FERMER LE MENU
+        
         function closeMenu() {
             const wrapper = document.getElementById('ui-wrapper');
             wrapper.classList.remove('menu-open');
@@ -412,20 +412,20 @@
         }
         document.querySelectorAll('input[type=range]').forEach(el => updateSliderFill(el));
 
-        // --- AUDIO ENGINE GÉNÉRATIF (WIND CHIMES) ---
+       
         let audioCtx = null;
         let isMusicPlaying = false;
         let musicInterval = null;
         let masterGain = null;
 
-        // Gammes de notes (Fréquences en Hz)
+        
         const SCALES = {
             feerique: [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66], // C Major Pentatonic (Aigu)
             zen: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25], // C Major Pentatonic (Medium)
             espace: [196.00, 233.08, 261.63, 311.13, 392.00, 466.16] // Gamme mineure mystérieuse
         };
 
-        // Paramètres des ambiances
+        
         const SOUNDSCAPES = {
             feerique: { type: 'sine', interval: 150, release: 1.5, volume: 0.05 },
             zen: { type: 'triangle', interval: 800, release: 3.0, volume: 0.04 }, // Plus lent, plus chaud
@@ -442,7 +442,7 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // Joue une seule note douce (Enveloppe ADSR simple)
+        
         function playNote(freq, type, release, volume) {
             if (!audioCtx) return;
             
@@ -458,28 +458,28 @@
             
             const now = audioCtx.currentTime;
             
-            // Attaque très douce pour éviter le "clic"
+            
             gainNode.gain.setValueAtTime(0, now);
             gainNode.gain.linearRampToValueAtTime(volume, now + 0.05);
-            // Relâchement long pour l'effet de résonance
+            
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + release);
             
             osc.start(now);
-            osc.stop(now + release + 1); // Stop après le fade out
+            osc.stop(now + release + 1); 
         }
 
         function startGenerativeMusic(styleKey) {
-            stopMusicLoop(); // Stop précédent
+            stopMusicLoop(); 
             
             const settings = SOUNDSCAPES[styleKey];
             const scale = SCALES[styleKey];
             
-            // Joue une note immédiatement
+            
             playRandomNote(scale, settings);
 
-            // Lance la boucle infinie
+            
             musicInterval = setInterval(() => {
-                // Ajoute un peu d'aléatoire dans le timing pour que ce ne soit pas robotique
+                
                 if (Math.random() > 0.3) { 
                     playRandomNote(scale, settings);
                 }
@@ -487,9 +487,9 @@
         }
 
         function playRandomNote(scale, settings) {
-            // Choisir une note au hasard dans la gamme
+            // note au hasard dans la gamme
             const freq = scale[Math.floor(Math.random() * scale.length)];
-            // Variation légère de pitch pour "détuner" et rendre plus organique (chorus naturel)
+            
             const detune = (Math.random() - 0.5) * 2; 
             playNote(freq + detune, settings.type, settings.release, settings.volume);
         }
@@ -510,7 +510,7 @@
                 btn.style.color = "#10b981";
             } else {
                 stopMusicLoop();
-                // On ne coupe pas le son brutalement, on laisse les notes finir (release naturel)
+                
                 isMusicPlaying = false;
                 btn.classList.remove('active-option');
                 btn.style.color = "";
@@ -524,7 +524,7 @@
             }
         }
 
-        // --- FULLSCREEN ---
+        
         function toggleFullscreen() {
             const btn = document.getElementById('btn-fullscreen');
             if (!document.fullscreenElement) {
@@ -538,7 +538,7 @@
             }
         }
 
-        // --- MOTEUR PARTICULES ---
+        
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         
@@ -664,7 +664,7 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- INPUT HANDLING (FIX MOBILE & CLOSE MENU) ---
+        
         const isUI = (e) => e.target.closest('#ui-panel') || e.target.closest('#menu-toggle');
 
         window.addEventListener('mousemove', (e) => {
@@ -672,17 +672,17 @@
             else { mouse.x = e.clientX; mouse.y = e.clientY; }
         });
 
-        // Modification : Mousedown ferme le menu si hors UI
+        
         window.addEventListener('mousedown', (e) => { 
             if (isUI(e)) return; 
             closeMenu(); // Ferme le menu
         });
 
-        // Modification : Touchstart ferme le menu si hors UI
+        
         window.addEventListener('touchstart', (e) => {
             if (isUI(e)) return;
             
-            closeMenu(); // Ferme le menu
+            closeMenu(); 
 
             if(e.touches.length > 0) {
                 mouse.x = e.touches[0].clientX;
