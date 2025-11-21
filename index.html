@@ -123,6 +123,27 @@
             letter-spacing: 0.05em;
         }
 
+        .btn-random {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #c7d2fe;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .btn-random:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.05);
+        }
+        .btn-random:active { transform: scale(0.95); }
+
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -274,8 +295,14 @@
 
                 <div class="slider-group">
                     <div class="slider-header">
-                        <span>COULEUR</span>
-                        <span id="color-indicator" style="width:12px; height:12px; border-radius:50%; background:hsl(0,100%,50%); display:inline-block;"></span>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span>COULEUR</span>
+                            <span id="color-indicator" style="width:12px; height:12px; border-radius:50%; background:hsl(0,100%,50%); display:inline-block;"></span>
+                        </div>
+                        <button class="btn-random" onclick="randomizeConfig()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="m16 8-8 8"/><path d="M16 16h.01"/><path d="M8 8h.01"/></svg>
+                            Aléatoire
+                        </button>
                     </div>
                     <input type="range" id="slider-hue" min="0" max="360" value="0" oninput="updateHue(this.value)">
                 </div>
@@ -471,7 +498,11 @@
         let interactionRadius = 400; 
         let particles = [];
         let mouse = { x: null, y: null };
-        let baseHue = 0;
+        
+        let baseHue = 0; 
+        let globalSaturation = 100; 
+        let globalLightnessMode = 'normal'; 
+
         let animationId;
         let lastTime = 0;
 
@@ -502,12 +533,53 @@
 
         function updateHue(val) {
             baseHue = parseInt(val);
+            globalSaturation = 100; 
+            globalLightnessMode = 'normal';
+            
             document.getElementById('color-indicator').style.background = `hsl(${baseHue}, 100%, 50%)`;
             
             for (let i = 0; i < particles.length; i++) {
                 const variation = particles[i].colorVariation || (Math.random() * 60 - 30);
                 particles[i].colorVariation = variation;
                 particles[i].colorHue = baseHue + variation;
+            }
+        }
+
+        function randomizeConfig() {
+            const newCount = Math.floor(Math.random() * 1950) + 50;
+            updateCount(newCount);
+            document.getElementById('slider-count').value = newCount;
+            updateSliderFill(document.getElementById('slider-count'));
+
+            const newSpeed = (Math.random() * 2.5 + 0.5).toFixed(1);
+            updateSpeed(newSpeed);
+            document.getElementById('slider-speed').value = newSpeed;
+            updateSliderFill(document.getElementById('slider-speed'));
+
+            const newRadius = Math.floor(Math.random() * 500) + 200;
+            updateRadius(newRadius);
+            document.getElementById('slider-radius').value = newRadius;
+            updateSliderFill(document.getElementById('slider-radius'));
+
+            const newMode = Math.random() > 0.5 ? 'attract' : 'repel';
+            setMode(newMode);
+
+            const colorChance = Math.random();
+            
+            if (colorChance < 0.1) { 
+                globalSaturation = 0;
+                globalLightnessMode = 'white';
+                document.getElementById('color-indicator').style.background = '#ffffff';
+            } else if (colorChance < 0.2) { 
+                globalSaturation = 0;
+                globalLightnessMode = 'black';
+                document.getElementById('color-indicator').style.background = '#000000';
+            } else {
+                globalSaturation = 100;
+                globalLightnessMode = 'normal';
+                const newHue = Math.floor(Math.random() * 360);
+                updateHue(newHue); 
+                document.getElementById('slider-hue').value = newHue;
             }
         }
 
@@ -615,8 +687,17 @@
                 if (this.y > canvas.height) { this.y = canvas.height; this.vy *= -1; }
 
                 this.life += 1 * speedMultiplier;
-                const lightness = 60 + Math.sin(this.life * 0.05) * 20;
-                this.color = `hsl(${this.colorHue}, 85%, ${lightness}%)`;
+                
+                let lightness;
+                if (globalLightnessMode === 'white') {
+                    lightness = 100;
+                } else if (globalLightnessMode === 'black') {
+                    lightness = 0;
+                } else {
+                    lightness = 60 + Math.sin(this.life * 0.05) * 20;
+                }
+                
+                this.color = `hsl(${this.colorHue}, ${globalSaturation}%, ${lightness}%)`;
             }
             draw() {
                 ctx.beginPath();
@@ -624,7 +705,11 @@
                 ctx.fillStyle = this.color;
                 const pulse = Math.sin(this.life * this.pulseSpeed);
                 const randomFlicker = Math.random() * 0.3;
-                ctx.globalAlpha = Math.max(0.4, 0.7 + (pulse * 0.2) + randomFlicker);
+                
+                let alpha = Math.max(0.4, 0.7 + (pulse * 0.2) + randomFlicker);
+                if (globalLightnessMode === 'black') alpha = 0.9; 
+
+                ctx.globalAlpha = alpha;
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
